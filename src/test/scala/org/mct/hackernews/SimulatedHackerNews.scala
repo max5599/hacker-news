@@ -18,6 +18,7 @@ trait SimulatedHackerNews {
 
     val hackerNewsServer = createServer {
       action => {
+        case GET(p"/v0/topstories") => action(Ok(Json.toJson(stories.map(_.id))))
         case GET(p"/v0/item/${long(id)}") => action(Ok(items(id)))
       }
     }.server
