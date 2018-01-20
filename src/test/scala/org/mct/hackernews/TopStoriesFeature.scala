@@ -26,7 +26,7 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
     val otherStories = (4 to 36).map(i => APIStory(i, List.empty)).toList
 
     When("the top stories are retrieved from the API")
-    val topStories = withHackerNews(story1 :: story2 :: story3 :: otherStories) { url =>
+    val topStories = withHackerNewsAndStories(story1 :: story2 :: story3 :: otherStories) { url =>
       withWSClient { implicit ws =>
         val retrieveTopStories = RetrieveTopStories(url)
         retrieveTopStories().value.futureValue

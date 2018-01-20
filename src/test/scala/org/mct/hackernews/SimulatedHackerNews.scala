@@ -2,38 +2,33 @@ package org.mct.hackernews
 
 import akka.actor.ActorSystem
 import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.mvc.Results._
 import play.api.mvc._
+import play.api.routing.sird._
 import play.api.routing.{Router, SimpleRouterImpl}
 import play.api.{BuiltInComponents, NoHttpFiltersComponents}
 import play.core.server.{AkkaHttpServerComponents, ServerConfig}
-import play.api.mvc.Results._
-import play.api.routing.sird._
 
 import scala.concurrent.Future
 
 trait SimulatedHackerNews {
 
-  def withHackerNews[T](stories: Seq[APIStory])(block: String => T): T = {
+  def withHackerNewsAndStories[T](stories: Seq[APIStory])(block: String => T): T = {
     val items: Map[Long, JsValue] = itemsFrom(stories)
-
-    val hackerNewsServer = createServer {
-      action => {
-        case GET(p"/v0/topstories") => action(Ok(Json.toJson(stories.map(_.id))))
-        case GET(p"/v0/item/${long(id)}") => action(Ok(items(id)))
-      }
-    }.server
-    try {
-      block(s"http://localhost:${hackerNewsServer.httpPort.get}")
-    } finally {
-      hackerNewsServer.stop()
-    }
+    withHackerNewsServer(
+      topStoriesResult = Ok(Json.toJson(stories.map(_.id))),
+      itemResult = id => Ok(items(id))
+    )(block)
   }
 
-  def withHackerNewsWithBadJson[T](block: String => T): T = {
+  def withHackerNewsServer[T](
+                           topStoriesResult: => Result = Ok(Json.arr()),
+                           itemResult: Long => Result = _ => NotFound
+                         )(block: String => T): T = {
     val hackerNewsServer = createServer {
       action => {
-        case GET(p"/v0/topstories") => action(Ok(JsString("Oups")))
-        case GET(p"/v0/item/${long(_)}") => action(Ok(JsString("Oups")))
+        case GET(p"/v0/topstories") => action(topStoriesResult)
+        case GET(p"/v0/item/${long(id)}") => action(itemResult(id))
       }
     }.server
     try {
