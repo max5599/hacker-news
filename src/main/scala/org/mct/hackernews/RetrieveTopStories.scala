@@ -1,11 +1,8 @@
 package org.mct.hackernews
 
-import cats.data.EitherT
 import cats.implicits._
-import play.api.libs.json.JsError
 
-import scala.concurrent.{ExecutionContext, Future}
-import RetrieveTopStories.FutureEither
+import scala.concurrent.ExecutionContext
 
 class RetrieveTopStories(
                           getTopStories: () => FutureEither[List[Long]],
@@ -50,10 +47,4 @@ object RetrieveTopStories {
     val getComment = new GetComment(url)
     new RetrieveTopStories(getTopStories, getStory, getComment)(ec)
   }
-
-  type FutureEither[A] = EitherT[Future, JsError, A]
 }
-
-case class TopStory(title: String, topCommenters: List[TopCommenter])
-
-case class TopCommenter(username: String, storyComments: Int, totalcomments: Int)

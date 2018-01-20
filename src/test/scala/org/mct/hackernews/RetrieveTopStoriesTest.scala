@@ -1,7 +1,6 @@
 package org.mct.hackernews
 
 import cats.implicits._
-import org.mct.hackernews.RetrieveTopStories.FutureEither
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
