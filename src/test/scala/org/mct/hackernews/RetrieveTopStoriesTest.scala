@@ -23,15 +23,38 @@ class RetrieveTopStoriesTest extends FlatSpec with Test {
     val story2 = Story(2L, "Story2", List(comment1ForStory2))
     val stories = List(story1, story2)
 
-    val retrieveTopStories = new RetrieveTopStories(
-      getTopStories = () => stories.map(_.id).pure[FutureEither],
-      getStory = (id: Long) => stories.find(_.id == id).get.pure[FutureEither],
-      getComment = (id: Long) => comments(id).pure[FutureEither]
+    val topStories = retrieveTopStories(
+      getTopStories = () => stories.map(_.id),
+      getStory = (id: Long) => stories.find(_.id == id).get,
+      getComment = (id: Long) => comments(id)
     )
 
-    retrieveTopStories().value.futureValue shouldBe Right(Seq(
+    topStories shouldBe Seq(
       TopStory(story1.title, List(TopCommenter(user1, 2, 3), TopCommenter(user2, 1, 1))),
       TopStory(story2.title, List(TopCommenter(user1, 1, 3)))
-    ))
+    )
+  }
+
+  it should "only retrieve the first 30 top stories" in {
+    val topStories = retrieveTopStories(
+      getTopStories = () => (1L to 35L).toList,
+      getStory = (id: Long) => Story(id, s"Story$id", List.empty),
+      getComment = (_: Long) => Comment("someone")
+    )
+
+    topStories.map(_.title) shouldBe (1L to 30L).map(i => s"Story$i")
+  }
+
+  private def retrieveTopStories(
+                                  getTopStories: () => List[Long],
+                                  getStory: (Long) => Story,
+                                  getComment: (Long) => Comment
+                                ) = {
+    val f = new RetrieveTopStories(
+      getTopStories = () => getTopStories().pure[FutureEither],
+      getStory = (id: Long) => getStory(id).pure[FutureEither],
+      getComment = (id: Long) => getComment(id).pure[FutureEither]
+    )
+    f().value.futureValue.right.value
   }
 }

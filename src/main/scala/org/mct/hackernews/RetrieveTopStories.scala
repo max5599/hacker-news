@@ -15,12 +15,14 @@ class RetrieveTopStories(
 
   def apply(): FutureEither[List[TopStory]] = {
     val storiesAndComments = for {
-      storiesId <- getTopStories()
+      storiesId <- getFirst30TopStories()
       stories <- getStories(storiesId)
       storyAndComments <- getStoryAndComments(stories)
     } yield storyAndComments
     storiesAndComments.map(aggregate)
   }
+
+  private def getFirst30TopStories() : FutureEither[List[Long]] = getTopStories().map(_.take(30))
 
   private def getStories(ids: List[Long]): FutureEither[List[Story]] = ids.map(getStory).sequence
 
