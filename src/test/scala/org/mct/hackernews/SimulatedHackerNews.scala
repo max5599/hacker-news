@@ -13,7 +13,7 @@ import scala.concurrent.Future
 
 trait SimulatedHackerNews {
 
-  def withHackerNews[T](stories: Seq[Story])(block: String => T): T = {
+  def withHackerNews[T](stories: Seq[APIStory])(block: String => T): T = {
     val items: Map[Long, JsValue] = itemsFrom(stories)
 
     val hackerNewsServer = createServer {
@@ -38,7 +38,7 @@ trait SimulatedHackerNews {
       override def router: Router = new SimpleRouterImpl(serverRoutes(defaultActionBuilder))
     }
 
-  private def itemsFrom(stories: Seq[Story]): Map[Long, JsValue] = {
+  private def itemsFrom(stories: Seq[APIStory]): Map[Long, JsValue] = {
     stories.flatMap { story =>
       val storyItem = story.id -> Json.obj("id" -> story.id, "title" -> story.title, "kids" -> story.comments.map(_.id), "type" -> "story")
       val commentItems = story.comments.map { comment =>
@@ -50,8 +50,8 @@ trait SimulatedHackerNews {
 
 }
 
-case class Story(id: Long, comments: List[Comment]) {
+case class APIStory(id: Long, comments: List[APIComment]) {
   lazy val title = s"Story$id"
 }
 
-case class Comment(id: Long, by: String)
+case class APIComment(id: Long, by: String)

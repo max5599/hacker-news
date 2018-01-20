@@ -22,11 +22,12 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
     )
     val story2 = storyWithCommentsBy(2, 1 -> users(1), 3 -> users(2), 2 -> users(3))
     val story3 = storyWithCommentsBy(3, 3 -> users(1), 2 -> users(6), 4 -> users(7))
-    val otherStories = (4 to 36).map(i => Story(i, List.empty)).toList
+    val otherStories = (4 to 36).map(i => APIStory(i, List.empty)).toList
 
     When("the top stories are retrieved from the API")
     val topStories = withHackerNews(story1 :: story2 :: story3 :: otherStories) { url =>
-      RetrieveTopStories(url).futureValue
+      val retrieveTopStories = RetrieveTopStories(url)
+      retrieveTopStories().value.futureValue
     }
 
     Then("the result should return the top stories with the title and commenters details")
@@ -43,8 +44,8 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
   }
 
   private def storyWithCommentsBy(storyId: Int, nbCommentsBy: (Int, String)*) = {
-    val comments = nbCommentsBy.flatMap { case (nbComments, user) => (1 to nbComments).map(i => Comment(storyId * 1000 + i, user)) }.toList
-    Story(storyId, comments)
+    val comments = nbCommentsBy.flatMap { case (nbComments, user) => (1 to nbComments).map(i => APIComment(storyId * 1000 + i, user)) }.toList
+    APIStory(storyId, comments)
   }
 }
 
