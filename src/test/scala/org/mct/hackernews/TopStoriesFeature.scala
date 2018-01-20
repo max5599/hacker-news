@@ -4,7 +4,7 @@ import org.scalatest.{FeatureSpec, GivenWhenThen}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHackerNews with Test {
+class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHackerNews with Test with WSClient {
 
   scenario(
     """Using hacker-news api, the top 30 stories should be return with:
@@ -27,8 +27,10 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
 
     When("the top stories are retrieved from the API")
     val topStories = withHackerNews(story1 :: story2 :: story3 :: otherStories) { url =>
-      val retrieveTopStories = RetrieveTopStories(url)
-      retrieveTopStories().value.futureValue
+      withWSClient { implicit ws =>
+        val retrieveTopStories = RetrieveTopStories(url)
+        retrieveTopStories().value.futureValue
+      }
     }
 
     Then("the result should return the top stories with the title and commenters details")

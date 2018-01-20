@@ -1,6 +1,7 @@
 package org.mct.hackernews
 
 import cats.implicits._
+import play.api.libs.ws.StandaloneWSClient
 
 import scala.concurrent.ExecutionContext
 
@@ -41,7 +42,7 @@ class RetrieveTopStories(
 }
 
 object RetrieveTopStories {
-  def apply(url: String)(implicit ec: ExecutionContext): RetrieveTopStories = {
+  def apply(url: String)(implicit ec: ExecutionContext, ws : StandaloneWSClient): RetrieveTopStories = {
     val getTopStories = new GetTopStories(url)
     val getStory = new GetStory(url)
     val getComment = new GetComment(url)
