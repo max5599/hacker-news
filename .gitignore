@@ -1,2 +1,5 @@
-*.class
-*.log
+/hacker-news.iml
+/.idea/
+/target/
+/project/target/
+/project/build.properties
