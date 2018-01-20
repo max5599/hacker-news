@@ -1,6 +1,7 @@
 package org.mct.hackernews
 
 import org.scalatest.FlatSpec
+import play.api.libs.json.JsError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,5 +16,15 @@ class GetTopStoriesTest extends FlatSpec with Test with SimulatedHackerNews with
       }
     }
     topStoriesId shouldBe (1 to 30)
+  }
+
+  it should "return the json error when parsing fail" in {
+    val error = withHackerNewsWithBadJson { url =>
+      withWSClient { implicit ws =>
+        val getTopStories = new GetTopStories(url)
+        getTopStories().value.futureValue.left.value
+      }
+    }
+    error shouldBe a[JsError]
   }
 }

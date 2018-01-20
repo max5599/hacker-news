@@ -1,8 +1,7 @@
 package org.mct.hackernews
 
 import cats.data.EitherT
-import cats.implicits._
-import play.api.libs.json.{JsError, JsValue}
+import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.libs.ws.JsonBodyReadables._
 import play.api.libs.ws.StandaloneWSClient
 
@@ -14,8 +13,11 @@ class GetTopStories(url: String)(implicit ec: ExecutionContext, ws: StandaloneWS
 
   override def apply(): EitherT[Future, JsError, List[Long]] = {
     val future = ws.url(url + endpoint).get().map { response =>
-      response.body[JsValue].as[List[Long]]
+      response.body[JsValue].validate[List[Long]] match {
+        case JsSuccess(ids, _) => Right(ids)
+        case e: JsError => Left(e)
+      }
     }
-    EitherT.right(future)
+    EitherT(future)
   }
 }

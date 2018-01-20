@@ -1,7 +1,7 @@
 package org.mct.hackernews
 
 import akka.actor.ActorSystem
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc._
 import play.api.routing.{Router, SimpleRouterImpl}
 import play.api.{BuiltInComponents, NoHttpFiltersComponents}
@@ -20,6 +20,20 @@ trait SimulatedHackerNews {
       action => {
         case GET(p"/v0/topstories") => action(Ok(Json.toJson(stories.map(_.id))))
         case GET(p"/v0/item/${long(id)}") => action(Ok(items(id)))
+      }
+    }.server
+    try {
+      block(s"http://localhost:${hackerNewsServer.httpPort.get}")
+    } finally {
+      hackerNewsServer.stop()
+    }
+  }
+
+  def withHackerNewsWithBadJson[T](block: String => T): T = {
+    val hackerNewsServer = createServer {
+      action => {
+        case GET(p"/v0/topstories") => action(Ok(JsString("Oups")))
+        case GET(p"/v0/item/${long(_)}") => action(Ok(JsString("Oups")))
       }
     }.server
     try {
