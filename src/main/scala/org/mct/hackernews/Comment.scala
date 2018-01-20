@@ -1,3 +1,3 @@
 package org.mct.hackernews
 
-case class Comment()
+case class Comment(by: String)

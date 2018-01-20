@@ -1,9 +1,10 @@
 package org.mct.hackernews
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import org.scalatest.{FeatureSpec, GivenWhenThen}
 
-class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHackerNews with Matchers with ScalaFutures {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHackerNews with Test {
 
   scenario(
     """Using hacker-news api, the top 30 stories should be return with:
@@ -31,14 +32,14 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
     }
 
     Then("the result should return the top stories with the title and commenters details")
-    val topStory1 = TopStory(story1.title, Seq(
+    val topStory1 = TopStory(story1.title, List(
       TopCommenter(users(1), 5, 9), TopCommenter(users(2), 4, 7), TopCommenter(users(3), 3, 5), TopCommenter(users(4), 3, 3),
       TopCommenter(users(5), 3, 3), TopCommenter(users(6), 3, 5), TopCommenter(users(7), 2, 6), TopCommenter(users(8), 2, 2),
       TopCommenter(users(9), 2, 2), TopCommenter(users(10), 2, 2)
     ))
-    val topStory2 = TopStory(story2.title, Seq(TopCommenter(users(2), 3, 7), TopCommenter(users(3), 2, 5), TopCommenter(users(1), 1, 9)))
-    val topStory3 = TopStory(story2.title, Seq(TopCommenter(users(7), 4, 6), TopCommenter(users(1), 3, 9), TopCommenter(users(6), 2, 5)))
-    val otherTopStories = otherStories.take(17).map(s => TopStory(s.title, Seq.empty))
+    val topStory2 = TopStory(story2.title, List(TopCommenter(users(2), 3, 7), TopCommenter(users(3), 2, 5), TopCommenter(users(1), 1, 9)))
+    val topStory3 = TopStory(story2.title, List(TopCommenter(users(7), 4, 6), TopCommenter(users(1), 3, 9), TopCommenter(users(6), 2, 5)))
+    val otherTopStories = otherStories.take(17).map(s => TopStory(s.title, List.empty))
 
     topStories shouldBe  topStory1 :: topStory2 :: topStory3 :: otherTopStories
   }
