@@ -45,6 +45,16 @@ class RetrieveTopStoriesTest extends FlatSpec with Test {
     topStories.map(_.title) shouldBe (1L to 30L).map(i => s"Story$i")
   }
 
+  it should "only retrieve the first 10 top commenters" in {
+    val topStories = retrieveTopStories(
+      getTopStories = () => List(1L),
+      getStory = (_: Long) => Story(1L, "Story", (1L to 25L).toList),
+      getComment = (id: Long) => if (id <= 20) Comment(s"User${(id % 10) + 1}") else Comment(s"User$id")
+    )
+
+    topStories.flatMap(_.topCommenters).map(_.username) should contain only ((1L to 10L).map(i => s"User$i"):_*)
+  }
+
   private def retrieveTopStories(
                                   getTopStories: () => List[Long],
                                   getStory: (Long) => Story,

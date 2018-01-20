@@ -22,7 +22,7 @@ class RetrieveTopStories(
     storiesAndComments.map(aggregate)
   }
 
-  private def getFirst30TopStories() : FutureEither[List[Long]] = getTopStories().map(_.take(30))
+  private def getFirst30TopStories(): FutureEither[List[Long]] = getTopStories().map(_.take(30))
 
   private def getStories(ids: List[Long]): FutureEither[List[Story]] = ids.map(getStory).sequence
 
@@ -34,7 +34,10 @@ class RetrieveTopStories(
   private def aggregate(storiesAndComments: List[(Story, List[Comment])]): List[TopStory] = {
     val totalCommentsByUser: Map[String, Int] = storiesAndComments.flatMap(_._2.toSeq).map(_.by).groupBy(identity).mapValues(_.size)
     storiesAndComments.map { case (story, comments) =>
-      val topCommenters = comments.groupBy(_.by).mapValues(_.size).map { case (username, nb) => TopCommenter(username, nb, totalCommentsByUser(username)) }.toList.sortBy(-_.storyComments)
+      val topCommenters = comments.groupBy(_.by).mapValues(_.size)
+        .map { case (username, nb) =>
+          TopCommenter(username, nb, totalCommentsByUser(username))
+        }.toList.sortBy(-_.storyComments).take(10)
       TopStory(story.title, topCommenters)
     }
   }
