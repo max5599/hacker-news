@@ -5,51 +5,37 @@ import cats.implicits._
 import play.api.libs.json.JsError
 
 import scala.concurrent.{ExecutionContext, Future}
+import RetrieveTopStories.FutureEither
 
 class RetrieveTopStories(
-                          getTopStories: () => EitherT[Future, JsError, List[Long]],
-                          getStory: (Long) => EitherT[Future, JsError, Story],
-                          getComment: (Long) => EitherT[Future, JsError, Comment]
+                          getTopStories: () => FutureEither[List[Long]],
+                          getStory: (Long) => FutureEither[Story],
+                          getComment: (Long) => FutureEither[Comment]
                         )(implicit ec: ExecutionContext) {
-  def apply(): EitherT[Future, JsError, Seq[TopStory]] = {
-    val storiesAndComments: EitherT[Future, JsError, Seq[(Story, Seq[Comment])]] = for {
+
+  def apply(): FutureEither[List[TopStory]] = {
+    val storiesAndComments = for {
       storiesId <- getTopStories()
       stories <- getStories(storiesId)
       storyAndComments <- getStoryAndComments(stories)
     } yield storyAndComments
+    storiesAndComments.map(aggregate)
+  }
 
-    storiesAndComments.map { sAndC =>
-      val sAndU = sAndC.map { case (story, comments) =>
-        story -> comments.groupBy(_.by).mapValues(_.size)
-      }
-      val total: Map[String, Int] = sAndU.flatMap(_._2.toSeq).groupBy(_._1).mapValues(_.map(_._2).sum)
-      sAndU.map { case (story, users) =>
-        TopStory(story.title, users.map { case (username, nb) => TopCommenter(username, nb, total(username)) }.toList.sortBy(-_.storyComments))
-      }
+  private def getStories(ids: List[Long]): FutureEither[List[Story]] = ids.map(getStory).sequence
+
+  private def getStoryAndComments(stories: List[Story]): FutureEither[List[(Story, List[Comment])]] =
+    stories.map(s => getComments(s.comments).map(c => s -> c)).sequence
+
+  private def getComments(ids: List[Long]): FutureEither[List[Comment]] = ids.map(getComment).sequence
+
+  private def aggregate(storiesAndComments: List[(Story, List[Comment])]): List[TopStory] = {
+    val totalCommentsByUser: Map[String, Int] = storiesAndComments.flatMap(_._2.toSeq).map(_.by).groupBy(identity).mapValues(_.size)
+    storiesAndComments.map { case (story, comments) =>
+      val topCommenters = comments.groupBy(_.by).mapValues(_.size).map { case (username, nb) => TopCommenter(username, nb, totalCommentsByUser(username)) }.toList.sortBy(-_.storyComments)
+      TopStory(story.title, topCommenters)
     }
   }
-
-  private def getStories(ids: List[Long]): EitherT[Future, JsError, List[Story]] = {
-    ids.map(getStory).sequence
-  }
-
-  def sequence[T](list: List[EitherT[Future, JsError, T]]): EitherT[Future, JsError, List[T]] = list match {
-    case Nil => EitherT[Future, JsError, List[T]](Future.successful(Right(List.empty)))
-    case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
-  }
-
-  private def getStoryAndComments(stories: List[Story]): EitherT[Future, JsError, List[(Story, List[Comment])]] = {
-    sequence(stories.map(s => getComments(s.comments).map(c => s -> c)))
-  }
-
-  private def getComments(ids: List[Long]): EitherT[Future, JsError, List[Comment]] = {
-    ids.map(getComment).sequence
-  }
-
-  /* private def test(): Unit = {
-     val list: List[EitherT[Future, String, Int]] = List(1.pure[], 2.pure)
-     val eitherOfList: EitherT[Future, String, List[Int]] = list.sequence
-   }*/
 }
 
 object RetrieveTopStories {
@@ -59,6 +45,8 @@ object RetrieveTopStories {
     val getComment = new GetComment(url)
     new RetrieveTopStories(getTopStories, getStory, getComment)(ec)
   }
+
+  type FutureEither[A] = EitherT[Future, JsError, A]
 }
 
 case class TopStory(title: String, topCommenters: List[TopCommenter])

@@ -1,27 +1,37 @@
 package org.mct.hackernews
 
-import cats.data.EitherT
+import cats.implicits._
+import org.mct.hackernews.RetrieveTopStories.FutureEither
 import org.scalatest.FlatSpec
-import play.api.libs.json.JsError
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RetrieveTopStoriesTest extends FlatSpec with Test {
 
   "Retrieving top stories" should "get top stories ids, title and comments of each story, user of each comment " +
     "then return for each story the best commenters with the number of comments and total number of comments" in {
-    val getTopStories = () => EitherT[Future, JsError, List[Long]](Future.successful(Right(List(1, 2))))
-    val stories = Map(1L -> Story(1L, "Story1", List(101, 102, 103)), 2L -> Story(2L, "Story2", List(201)))
-    val getStory = (id: Long) => EitherT[Future, JsError, Story](Future.successful(Right(stories(id))))
-    val comments = Map(101L -> Comment("User1"), 102L -> Comment("User2"), 103L -> Comment("User1"), 201 -> Comment("User1"))
-    val getComment = (id: Long) => EitherT[Future, JsError, Comment](Future.successful(Right(comments(id))))
+    val user1 = "User1"
+    val user2 = "User2"
 
-    val retrieveTopStories = new RetrieveTopStories(getTopStories, getStory, getComment)
+    val comment1ForStory1 = 101L
+    val comment2ForStory1 = 102L
+    val comment3ForStory1 = 103L
+    val comment1ForStory2 = 201L
+    val comments = Map(comment1ForStory1 -> Comment(user1), comment2ForStory1 -> Comment(user2), comment3ForStory1 -> Comment(user1), comment1ForStory2 -> Comment(user1))
+
+    val story1 = Story(1L, "Story1", List(comment1ForStory1, comment2ForStory1, comment3ForStory1))
+    val story2 = Story(2L, "Story2", List(comment1ForStory2))
+    val stories = List(story1, story2)
+
+    val retrieveTopStories = new RetrieveTopStories(
+      getTopStories = () => stories.map(_.id).pure[FutureEither],
+      getStory = (id: Long) => stories.find(_.id == id).get.pure[FutureEither],
+      getComment = (id: Long) => comments(id).pure[FutureEither]
+    )
 
     retrieveTopStories().value.futureValue shouldBe Right(Seq(
-      TopStory("Story1", List(TopCommenter("User1", 2, 3), TopCommenter("User2", 1, 1))),
-      TopStory("Story2", List(TopCommenter("User1", 1, 3)))
+      TopStory(story1.title, List(TopCommenter(user1, 2, 3), TopCommenter(user2, 1, 1))),
+      TopStory(story2.title, List(TopCommenter(user1, 1, 3)))
     ))
   }
 }
