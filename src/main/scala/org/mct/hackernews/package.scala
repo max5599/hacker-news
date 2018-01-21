@@ -8,6 +8,7 @@ import scala.concurrent.Future
 package object hackernews {
 
   type FutureEither[A] = EitherT[Future, Error, A]
+  type ErrorOr[A] = Either[Error, A]
 
   case class Comment(by: String)
 
