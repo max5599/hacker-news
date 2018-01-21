@@ -48,11 +48,11 @@ object RetrieveTopStories {
 
     val getTopStories = new GetAndParse[List[Long]]
     val getStory = new GetAndParse[Story]
-    val getComment = new GetComment(url)
+    val getComment = new GetAndParse[Comment]
     new RetrieveTopStories(
       () => getTopStories(url + "/v0/topstories"),
       id => getStory(url + "/v0/item/" + id),
-      getComment
+      id => getComment(url + "/v0/item/" + id)
     )
   }
 }

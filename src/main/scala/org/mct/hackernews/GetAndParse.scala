@@ -28,7 +28,7 @@ class GetAndParse[T](implicit ec: ExecutionContext, ws: StandaloneWSClient, read
 
   private def parseBody(response: StandaloneWSResponse): ErrorOr[T] =
     response.body[JsValue].validate match {
-      case JsSuccess(ids, _) => Right(ids)
+      case JsSuccess(data, _) => Right(data)
       case e: JsError => Left(ParsingError(e))
     }
 }
