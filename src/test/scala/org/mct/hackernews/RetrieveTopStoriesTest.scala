@@ -1,11 +1,10 @@
 package org.mct.hackernews
 
 import cats.implicits._
-import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RetrieveTopStoriesTest extends FlatSpec with Test {
+class RetrieveTopStoriesTest extends UnitTest {
 
   "Retrieving top stories" should "get top stories ids, title and comments of each story, user of each comment " +
     "then return for each story the best commenters with the number of comments and total number of comments" in {

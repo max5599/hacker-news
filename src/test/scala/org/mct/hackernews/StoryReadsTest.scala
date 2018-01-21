@@ -1,9 +1,8 @@
 package org.mct.hackernews
 
-import org.scalatest.FlatSpec
 import play.api.libs.json._
 
-class StoryReadsTest extends FlatSpec with Test {
+class StoryReadsTest extends UnitTest {
 
   "StoryReads" should "convert json to story" in {
     val json = Json.obj(

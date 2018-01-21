@@ -1,13 +1,12 @@
 package org.mct.hackernews
 
-import org.scalatest.FlatSpec
 import play.api.libs.json._
 import play.api.mvc.Result
 import play.api.mvc.Results._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class GetAndParseTest extends FlatSpec with Test with SimulatedHackerNews with WSClient {
+class GetAndParseTest extends UnitTest with SimulatedHackerNews with WSClient {
 
   "GetAndParse" should "get the data from URL and parse them" in {
     implicit val reads: Reads[String] = readsThatReturn(JsSuccess("ok"))
