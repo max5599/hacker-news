@@ -46,13 +46,10 @@ object RetrieveTopStories {
     import play.api.libs.json.Reads._
     import ItemReads._
 
-    val getTopStories = new GetAndParse[List[Long]]
-    val getStory = new GetAndParse[Story]
-    val getComment = new GetAndParse[Comment]
     new RetrieveTopStories(
-      () => getTopStories(url + "/v0/topstories"),
-      id => getStory(url + "/v0/item/" + id),
-      id => getComment(url + "/v0/item/" + id)
+      () => GetAndParse[List[Long]](url + "/v0/topstories"),
+      id => GetAndParse[Story](url + "/v0/item/" + id),
+      id => GetAndParse[Comment](url + "/v0/item/" + id)
     )
   }
 }

@@ -8,16 +8,16 @@ import play.api.libs.ws.{StandaloneWSClient, StandaloneWSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetAndParse[T](implicit ec: ExecutionContext, ws: StandaloneWSClient, reads: Reads[T]) extends (String => FutureEither[T]) {
+object GetAndParse {
 
-  override def apply(url: String): EitherT[Future, Error, T] = {
+  def apply[T](url: String)(implicit ec: ExecutionContext, ws: StandaloneWSClient, reads: Reads[T]): EitherT[Future, Error, T] = {
     for {
       response <- getAndValidateStatus(url)
       body <- EitherT.fromEither[Future](parseBody(response))
     } yield body
   }
 
-  private def getAndValidateStatus(url: String): FutureEither[StandaloneWSResponse] = {
+  private def getAndValidateStatus(url: String)(implicit ec: ExecutionContext, ws: StandaloneWSClient): FutureEither[StandaloneWSResponse] = {
     EitherT(ws.url(url).get().map { response =>
       if (response.status < 400)
         Right(response)
@@ -26,7 +26,7 @@ class GetAndParse[T](implicit ec: ExecutionContext, ws: StandaloneWSClient, read
     })
   }
 
-  private def parseBody(response: StandaloneWSResponse): ErrorOr[T] =
+  private def parseBody[T](response: StandaloneWSResponse)(implicit reads: Reads[T]): ErrorOr[T] =
     response.body[JsValue].validate match {
       case JsSuccess(data, _) => Right(data)
       case e: JsError => Left(ParsingError(e))
