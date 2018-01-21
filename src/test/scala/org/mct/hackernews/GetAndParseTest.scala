@@ -27,8 +27,8 @@ class GetAndParseTest extends FlatSpec with Test with SimulatedHackerNews with W
 
   private def get[T](result: Result)(implicit reads: Reads[String]): Either[Error, String] = withHackerNewsServer(topStoriesResult = result) { url =>
     withWSClient { implicit ws =>
-      val getAndParse = new GetAndParse(url + "/v0/topstories")
-      getAndParse().value.futureValue
+      val getAndParse = new GetAndParse
+      getAndParse(url + "/v0/topstories").value.futureValue
     }
   }
 

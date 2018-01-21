@@ -8,9 +8,9 @@ import play.api.libs.ws.{StandaloneWSClient, StandaloneWSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetAndParse[T](url: String)(implicit ec: ExecutionContext, ws: StandaloneWSClient, reads: Reads[T]) extends (() => FutureEither[T]) {
+class GetAndParse[T](implicit ec: ExecutionContext, ws: StandaloneWSClient, reads: Reads[T]) extends (String => FutureEither[T]) {
 
-  override def apply(): EitherT[Future, Error, T] = {
+  override def apply(url: String): EitherT[Future, Error, T] = {
     for {
       response <- getAndValidateStatus(url)
       body <- EitherT.fromEither[Future](parseBody(response))
