@@ -5,12 +5,12 @@ import java.util.concurrent.ForkJoinPool
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor}
+import scala.concurrent.{Await, ExecutionContext}
 
 object RetrieveTopStoriesFromHackerNews extends App with WSClient {
 
   lazy val logger = LoggerFactory.getLogger(RetrieveTopStoriesFromHackerNews.getClass)
-  implicit lazy val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(new ForkJoinPool(20))
+  implicit lazy val ec: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(20))
 
   val result = withWSClient { implicit ws =>
 
@@ -24,6 +24,6 @@ object RetrieveTopStoriesFromHackerNews extends App with WSClient {
     }
   }
 
-  System.exit(Await.result(result, 10.seconds))
+  System.exit(Await.result(result, 30.seconds))
 
 }

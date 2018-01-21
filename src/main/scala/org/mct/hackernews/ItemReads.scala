@@ -15,7 +15,7 @@ object ItemReads {
     ) ((id, title, kids, _) => Story(id, title, kids))
 
   implicit val commentReads: Reads[Comment] = (
-    (JsPath \ "by").read[String] and
+    (JsPath \ "by").readNullable[String].map(_.getOrElse("unknown")) and
       (JsPath \ "type").read(verifying[String](_ == "comment"))
     ) ((by, _) => Comment(by))
 }

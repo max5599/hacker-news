@@ -22,6 +22,14 @@ class CommentReadsTest extends UnitTest {
     readJson(json) shouldBe JsError(JsPath(List(KeyPathNode("type"))), JsonValidationError("error.invalid"))
   }
 
+  it should "default by to unknown" in {
+    val json = Json.obj(
+      "type" -> "comment"
+    )
+
+    readJson(json) shouldBe JsSuccess(Comment("unknown"))
+  }
+
   private def readJson(json: JsValue): JsResult[Comment] = json.validate(ItemReads.commentReads)
 
 }
