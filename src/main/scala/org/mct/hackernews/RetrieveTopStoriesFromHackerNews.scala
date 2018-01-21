@@ -13,7 +13,6 @@ object RetrieveTopStoriesFromHackerNews extends App with WSClient {
   implicit lazy val ec: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(20))
 
   val result = withWSClient { implicit ws =>
-
     RetrieveTopStories("https://hacker-news.firebaseio.com").apply().value.map {
       case Right(topStories) =>
         logger.info("Here's top stories from hacker-news: {}", topStories)
