@@ -9,11 +9,11 @@ import play.api.routing.{Router, SimpleRouterImpl}
 import play.api.{BuiltInComponents, NoHttpFiltersComponents}
 import play.core.server.{AkkaHttpServerComponents, ServerConfig}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait SimulatedHackerNews {
 
-  def withHackerNewsAndStories[T](stories: Seq[APIStory])(block: String => T): T = {
+  def withHackerNewsAndStories[T](stories: Seq[APIStory])(block: String => Future[T])(implicit ec: ExecutionContext): Future[T] = {
     val items: Map[Long, JsValue] = itemsFrom(stories)
     withHackerNewsServer(
       topStoriesResult = Ok(Json.toJson(stories.map(_.id))),
@@ -22,20 +22,17 @@ trait SimulatedHackerNews {
   }
 
   def withHackerNewsServer[T](
-                           topStoriesResult: => Result = Ok(Json.arr()),
-                           itemResult: Long => Result = _ => NotFound
-                         )(block: String => T): T = {
+                               topStoriesResult: => Result = Ok(Json.arr()),
+                               itemResult: Long => Result = _ => NotFound
+                             )(block: String => Future[T])(implicit ec: ExecutionContext): Future[T] = {
     val hackerNewsServer = createServer {
       action => {
         case GET(p"/v0/topstories.json") => action(topStoriesResult)
         case GET(p"/v0/item/${long(id)}.json") => action(itemResult(id))
       }
     }.server
-    try {
-      block(s"http://localhost:${hackerNewsServer.httpPort.get}")
-    } finally {
-      hackerNewsServer.stop()
-    }
+    block(s"http://localhost:${hackerNewsServer.httpPort.get}")
+      .andThen { case _ => hackerNewsServer.stop() }
   }
 
   private def createServer(serverRoutes: ActionBuilder[Request, AnyContent] => PartialFunction[RequestHeader, Handler]) =

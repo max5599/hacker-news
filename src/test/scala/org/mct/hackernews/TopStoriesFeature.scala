@@ -16,21 +16,21 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
 
     Given("Stories, comments and user details")
     val users = (0 to 10).map(i => s"User$i")
-    val story1 = storyWithCommentsBy(1,
-      11 -> users(0), 10 -> users(1), 9-> users(2), 8 -> users(3), 7 -> users(4),
+    val story1 = storyWithCommentsBy(id = 1,
+      11 -> users(0), 10 -> users(1), 9 -> users(2), 8 -> users(3), 7 -> users(4),
       6 -> users(5), 5 -> users(6), 4 -> users(7), 3 -> users(8), 2 -> users(9),
       1 -> users(10)
     )
-    val story2 = storyWithCommentsBy(2, 1 -> users(0), 3 -> users(1), 2 -> users(2))
-    val otherStories = (3 to 36).map(i => APIStory(i, List.empty)).toList
+    val story2 = storyWithCommentsBy(id = 2, 1 -> users(0), 3 -> users(1), 2 -> users(2))
+    val otherStories = (3 to 36).map(i => APIStory(id = i, List.empty)).toList
 
     When("the top stories are retrieved from the API")
     val topStories = withHackerNewsAndStories(story1 :: story2 :: otherStories) { url =>
       withWSClient { implicit ws =>
         val retrieveTopStories = RetrieveTopStories(url)
         retrieveTopStories().value
-      }.futureValue
-    }
+      }
+    }.futureValue
 
     Then("the result should return the top stories with the title and commenters details")
     val topStory1 = TopStory(story1.title, List(
@@ -46,14 +46,14 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
 
   private var currentCommentId = 1000
 
-  private def storyWithCommentsBy(storyId: Int, nbCommentsBy: (Int, String)*) = {
+  private def storyWithCommentsBy(id: Int, nbCommentsBy: (Int, String)*) = {
     val comments = nbCommentsBy.flatMap { case (nbComments, user) =>
       (1 to nbComments).map { _ =>
         currentCommentId += 1
         APIComment(currentCommentId, user)
       }
     }.toList
-    APIStory(storyId, comments)
+    APIStory(id, comments)
   }
 }
 
