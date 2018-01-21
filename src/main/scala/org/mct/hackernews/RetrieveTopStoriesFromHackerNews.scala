@@ -15,7 +15,8 @@ object RetrieveTopStoriesFromHackerNews extends App with WSClient {
   val result = withWSClient { implicit ws =>
     RetrieveTopStories("https://hacker-news.firebaseio.com").apply().value.map {
       case Right(topStories) =>
-        logger.info("Here's top stories from hacker-news: {}", topStories)
+        val pretty = topStories.mkString("- ", "\n- ", "")
+        logger.info("Here's top stories from hacker-news:\n{}", pretty)
         0
       case Left(error) =>
         logger.error("Error while getting top stories: {}", error)
