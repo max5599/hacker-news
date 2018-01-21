@@ -28,8 +28,8 @@ class TopStoriesFeature extends FeatureSpec with GivenWhenThen with SimulatedHac
     val topStories = withHackerNewsAndStories(story1 :: story2 :: otherStories) { url =>
       withWSClient { implicit ws =>
         val retrieveTopStories = RetrieveTopStories(url)
-        retrieveTopStories().value.futureValue
-      }
+        retrieveTopStories().value
+      }.futureValue
     }
 
     Then("the result should return the top stories with the title and commenters details")

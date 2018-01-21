@@ -27,8 +27,8 @@ class GetAndParseTest extends UnitTest with SimulatedHackerNews with WSClient {
   private def getAndParse(result: Result)(implicit reads: Reads[String]): Either[Error, String] =
     withHackerNewsServer(topStoriesResult = result) { url =>
       withWSClient { implicit ws =>
-        GetAndParse(url + "/v0/topstories").value.futureValue
-      }
+        GetAndParse(url + "/v0/topstories.json").value
+      }.futureValue
     }
 
   private def readsThatReturn(jsResult: JsResult[String]): Reads[String] = (_: JsValue) => jsResult

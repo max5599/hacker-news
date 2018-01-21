@@ -47,9 +47,9 @@ object RetrieveTopStories {
     import ItemReads._
 
     new RetrieveTopStories(
-      () => GetAndParse[List[Long]](url + "/v0/topstories"),
-      id => GetAndParse[Story](url + "/v0/item/" + id),
-      id => GetAndParse[Comment](url + "/v0/item/" + id)
+      () => GetAndParse[List[Long]](url + "/v0/topstories.json"),
+      id => GetAndParse[Story](url + "/v0/item/" + id + ".json"),
+      id => GetAndParse[Comment](url + "/v0/item/" + id + ".json")
     )
   }
 }

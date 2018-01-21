@@ -27,8 +27,8 @@ trait SimulatedHackerNews {
                          )(block: String => T): T = {
     val hackerNewsServer = createServer {
       action => {
-        case GET(p"/v0/topstories") => action(topStoriesResult)
-        case GET(p"/v0/item/${long(id)}") => action(itemResult(id))
+        case GET(p"/v0/topstories.json") => action(topStoriesResult)
+        case GET(p"/v0/item/${long(id)}.json") => action(itemResult(id))
       }
     }.server
     try {
