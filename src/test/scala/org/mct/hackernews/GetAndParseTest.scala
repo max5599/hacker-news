@@ -10,24 +10,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class GetAndParseTest extends FlatSpec with Test with SimulatedHackerNews with WSClient {
 
   "GetAndParse" should "get the data from URL and parse them" in {
-    val reads = readsThatReturn(JsSuccess("ok"))
-    get(Ok(JsString("some json")), reads) shouldBe Right("ok")
+    implicit val reads: Reads[String] = readsThatReturn(JsSuccess("ok"))
+    get(Ok(JsString("some json"))) shouldBe Right("ok")
   }
 
   it should "return the json error when parsing fail" in {
     val jsError = JsError("parsing error")
-    val reads = readsThatReturn(jsError)
-    get(Ok(JsString("some json")), reads) shouldBe Left(ParsingError(jsError))
+    implicit val reads: Reads[String] = readsThatReturn(jsError)
+    get(Ok(JsString("some json"))) shouldBe Left(ParsingError(jsError))
   }
 
   it should "return the status error when status is >= 400" in {
-    val reads = readsThatReturn(JsSuccess("ok"))
-    get(BadRequest, reads) shouldBe Left(HttpStatusError(400))
+    implicit val reads: Reads[String] = readsThatReturn(JsSuccess("ok"))
+    get(BadRequest) shouldBe Left(HttpStatusError(400))
   }
 
-  private def get[T](result: Result, reads: Reads[String]): Either[Error, String] = withHackerNewsServer(topStoriesResult = result) { url =>
+  private def get[T](result: Result)(implicit reads: Reads[String]): Either[Error, String] = withHackerNewsServer(topStoriesResult = result) { url =>
     withWSClient { implicit ws =>
-      val getAndParse = new GetAndParse(url + "/v0/topstories", reads)
+      val getAndParse = new GetAndParse(url + "/v0/topstories")
       getAndParse().value.futureValue
     }
   }

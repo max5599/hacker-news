@@ -43,7 +43,8 @@ class RetrieveTopStories(
 
 object RetrieveTopStories {
   def apply(url: String)(implicit ec: ExecutionContext, ws : StandaloneWSClient): RetrieveTopStories = {
-    val getTopStories = new GetTopStories(url)
+    import play.api.libs.json.Reads._
+    val getTopStories = new GetAndParse[List[Long]](url + "/v0/topstories")
     val getStory = new GetStory(url)
     val getComment = new GetComment(url)
     new RetrieveTopStories(getTopStories, getStory, getComment)(ec)
