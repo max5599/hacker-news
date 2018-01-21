@@ -5,6 +5,6 @@ import play.api.libs.json.JsError
 
 import scala.concurrent.Future
 
-class GetStory(url: String) extends ((Long) => EitherT[Future, JsError, Story]) {
-  override def apply(v1: Long): EitherT[Future, JsError, Story] = ???
+class GetStory(url: String) extends ((Long) => FutureEither[Story]) {
+  override def apply(v1: Long): FutureEither[Story] = ???
 }

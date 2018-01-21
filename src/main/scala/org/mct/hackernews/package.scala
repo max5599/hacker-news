@@ -7,7 +7,7 @@ import scala.concurrent.Future
 
 package object hackernews {
 
-  type FutureEither[A] = EitherT[Future, JsError, A]
+  type FutureEither[A] = EitherT[Future, Error, A]
 
   case class Comment(by: String)
 
@@ -16,5 +16,11 @@ package object hackernews {
   case class TopStory(title: String, topCommenters: List[TopCommenter])
 
   case class TopCommenter(username: String, storyComments: Int, totalcomments: Int)
+
+  sealed trait Error
+
+  case class ParsingError(jsError: JsError) extends Error
+
+  case class HttpStatusError(status: Int) extends Error
 
 }
