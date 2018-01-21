@@ -23,6 +23,6 @@ object RetrieveTopStoriesFromHackerNews extends App with WSClient {
     }
   }
 
-  System.exit(Await.result(result, 30.seconds))
+  sys.exit(Await.result(result, 30.seconds))
 
 }

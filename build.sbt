@@ -2,6 +2,9 @@ organization := "org.mct"
 name := "hacker-news"
 version := "0.1"
 
+mainClass in Compile := Some("org.mct.hackernews.RetrieveTopStoriesFromHackerNews")
+trapExit := false
+
 scalaVersion := "2.12.4"
 scalacOptions += "-Ypartial-unification"
 
