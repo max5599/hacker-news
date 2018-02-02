@@ -27,9 +27,9 @@ class RetrieveTopStories(
         story <- getStory(storyId)
         comments <- getComments(story.comments)
       } yield story -> comments
-    }.sequence
+    }.sequence[FutureEither, (Story, List[Comment])]
 
-  private def getComments(ids: List[Long]): FutureEither[List[Comment]] = ids.map(getComment).sequence
+  private def getComments(ids: List[Long]): FutureEither[List[Comment]] = ids.map(getComment).sequence[FutureEither, Comment]
 
   private def aggregate(storiesAndComments: List[(Story, List[Comment])]): List[TopStory] = {
     val totalCommentsByUser: Map[String, Int] = storiesAndComments.flatMap(_._2.toSeq).map(_.by).groupBy(identity).mapValues(_.size)
